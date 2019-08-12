@@ -8,72 +8,79 @@ using System.Data.Entity;
 
 namespace BankingApp
 {
-   public interface IRepository: IDisposable
+    public interface IRepository : IDisposable
     {
         List<Client> GetClientsList();
         Client GetClient(int id);
+        Client GetClientByLogin(string login);
         void Create(Client item);
         void Update(Client item);
         void Delete(int id);
         void Save();
     }
 
-   public class ClientRepository : IRepository
-   {
-       private BankingAppModel db;
-    public ClientRepository()
+    public class ClientRepository : IRepository
     {
-        this.db = new BankingAppModel();
-    }
-    public List<Client> GetClientsList()
-    {
-        return db.Clients.ToList();
-    }
-    public Client GetClient(int id)
-    {
-        return db.Clients.Find(id);
-    }
-  
-    public void Create(Client c)
-    {
-        db.Clients.Add(c);
-    }
-  
-    public void Update(Client c)
-    {
-        db.Entry(c).State = EntityState.Modified;
-    }
-  
-    public void Delete(int id)
-    {
-        Client c = db.Clients.Find(id);
-        if(c!=null)
-            db.Clients.Remove(c);
-    }
-  
-    public void Save()
-    {
-        db.SaveChanges ();
-    }
-  
-    private bool disposed = false;
-  
-    public virtual void Dispose(bool disposing)
-    {
-        if(!this.disposed)
+        private BankingAppModel db;
+        public ClientRepository()
         {
-            if(disposing)
-            {
-                db.Dispose();
-            }
+            this.db = new BankingAppModel();
         }
-        this.disposed = true;
+        public List<Client> GetClientsList()
+        {
+            return db.Clients.ToList();
+        }
+        public Client GetClient(int id)
+        {
+            return db.Clients.FirstOrDefault(x => x.Id == id);
+        }
+
+        public Client GetClientByLogin(string login)
+        {
+            return db.Clients.FirstOrDefault(x => x.UserName == login);
+        }
+
+        public void Create(Client c)
+        {
+            db.Clients.Add(c);
+        }
+
+        public void Update(Client c)
+        {
+            db.Entry(c).State = EntityState.Modified;
+        }
+
+        public void Delete(int id)
+        {
+            Client c = db.Clients.Find(id);
+            if (c != null)
+                db.Clients.Remove(c);
+        }
+
+        public void Save()
+        {
+            var valer = db.GetValidationErrors();
+            db.SaveChanges();
+        }
+
+        private bool disposed = false;
+
+        public virtual void Dispose(bool disposing)
+        {
+            if (!this.disposed)
+            {
+                if (disposing)
+                {
+                    db.Dispose();
+                }
+            }
+            this.disposed = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
     }
-  
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-   } 
 }
