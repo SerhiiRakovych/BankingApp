@@ -15,7 +15,7 @@
             {
                 @Html.AntiForgeryToken()
                 <h4>Введите свои учетные данные</h4>
-                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <h5 class="text-danger">@ViewData["LoginResult"]</h5>
                 <div class="form-group">
                     @Html.LabelFor(m => m.UserName, new { @class = "col-md-2 control-label" })
                     <div class="col-md-10">
@@ -37,6 +37,7 @@
                 </div>
             }
         </section>
+
     </div>
 </div>
 

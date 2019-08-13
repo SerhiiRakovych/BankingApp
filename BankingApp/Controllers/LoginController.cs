@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using BankingApp.Models;
+using BankingApp.Methods;
 
 namespace BankingApp.Controllers
 {
@@ -29,6 +30,7 @@ namespace BankingApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult UserLogin(LoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -39,11 +41,31 @@ namespace BankingApp.Controllers
             Client client = repo.GetClientByLogin(model.UserName);
             if (client == null)
             {
-                return View();
+                ViewData["LoginResult"] = "Неверное имя пользователя или пароль";
+                return View("Index");
             }
 
+            string CurrentPassword = CustomMethods.CalculateMD5Hash(model.Password, client.Salt);
+            if(client.Password != CurrentPassword)
+            {
+                ViewData["LoginResult"] = "Неверное имя пользователя или пароль";
+                return View("Index");
+            }
 
-            return View();
+            if (client.isAdmin)
+            {
+                HttpCookie AuthCookie = new HttpCookie("AuthCookie");
+                string AuthStr = CustomMethods.CalculateMD5Hash(HttpContext.Session.SessionID, client.UserName);
+                AuthCookie.Value = AuthStr;
+                AuthCookie.Expires = DateTime.Now.AddHours(1);
+                Response.Cookies.Add(AuthCookie);
+                return Redirect("/UsersManagement/Index");
+            }
+            else
+            {
+                return Redirect("/UsersManagement/Index");
+            }
+            
         }
     }
 }

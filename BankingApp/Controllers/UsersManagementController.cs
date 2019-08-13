@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.Mvc;
 using BankingApp.Models;
-using System.Security.Cryptography;
-using System.Text;
+using BankingApp.Methods;
 
 namespace BankingApp.Controllers
 {
@@ -58,7 +52,7 @@ namespace BankingApp.Controllers
             client.Salt = Guid.NewGuid().ToString("N");
             if (ModelState.IsValid)
             {
-                string HashedPassword = CalculateMD5Hash(client.Password, client.Salt);
+                string HashedPassword = CustomMethods.CalculateMD5Hash(client.Password, client.Salt);
                 client.Password = HashedPassword;
                 client.ConfirmPassword = HashedPassword;
 
@@ -120,22 +114,6 @@ namespace BankingApp.Controllers
             repo.Delete(id);
             repo.Save();
             return RedirectToAction("Index");
-        }
-
-        public string CalculateMD5Hash(string password, string salt)
-        {
-            string input = salt + password;
-
-            MD5 md5 = MD5.Create();
-            byte[] inputBytes = Encoding.ASCII.GetBytes(input);
-            byte[] hash = md5.ComputeHash(inputBytes);
-
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < hash.Length; i++)
-            {
-                sb.Append(hash[i].ToString("X2"));
-            }
-            return sb.ToString();
         }
 
     }
